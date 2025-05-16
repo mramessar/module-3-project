@@ -5,6 +5,8 @@ from models import db
 from schemas import ma
 from datetime import datetime
 import urllib.parse
+from flask import render_template
+
 
 # Import models
 try:
@@ -36,9 +38,9 @@ except Exception as e:
 
 # Setup DB URI
 try:
-    raw_password = "YOUR_MYSQL_PASSWORD"
+    raw_password = "OKMijn098)(*"
     encoded_password = urllib.parse.quote_plus(raw_password)
-    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+mysqlconnector://root:{encoded_password}@localhost/ecommerce_api'
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'mysql+pymysql://root:{encoded_password}@localhost/ecommerce_api'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     print("🔧 App config set.")
 except Exception as e:
@@ -52,6 +54,19 @@ try:
 except Exception as e:
     print(f"❌ Failed to initialize DB or Marshmallow: {e}")
 
+# Now safe to add debug prints:
+from sqlalchemy import inspect
+print("🔗 DB URI:", app.config['SQLALCHEMY_DATABASE_URI'])
+with app.app_context():
+    print("🛠 Engine URL:", db.engine.url)
+    inspector = inspect(db.engine)
+    print("🔍 Connected DB tables (pre-create_all):", inspector.get_table_names())
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
 # Create tables
 try:
     print("🧪 Entering app context for db.create_all()")
@@ -60,7 +75,7 @@ try:
         for table_name in db.metadata.tables:
             print(f" - {table_name}")
         print("👀 Calling db.create_all()...")
-        # db.create_all()
+        db.create_all()
         print("✅ Tables created.")
 except Exception as e:
     import traceback
